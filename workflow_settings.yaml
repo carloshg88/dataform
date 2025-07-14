@@ -1,0 +1,5 @@
+defaultProject: bustling-sunset-304521
+defaultLocation: US
+defaultDataset: dataform
+defaultAssertionDataset: dataform_assertions
+dataformCoreVersion: 3.0.0
