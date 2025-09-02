@@ -1,0 +1,15 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_cartoes_aprovado_total",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_cartoes_aprovado_total`(screen_name STRING, event_name STRING, path STRING, name STRING, flow STRING, product STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE -- CARTOES
+     
+      WHEN event_name = 'Screen_Data' AND (REGEXP_CONTAINS(screen_name, r'Cartao_Aprovado/dzero_aprovado|Cartao_Aprovado/dzero_nao_elegivel|Cartao_Aprovado/dzero_sem_emissao_online') OR REGEXP_CONTAINS(screen_name,r'sucesso_cartao_aprovado_dzero_aprovado|sucesso_cartao_aprovado_dzero_nao_elegivel|sucesso_cartao_aprovado_sem_emissao_online')) THEN STRUCT('cartoes' AS event_journey, 'cartao_dzero_aprovado_total' AS event_sala, 'bq_af_cartao_dzero_aprovado_total' AS event_postback)
+
+
+      ELSE NULL
+  END
+);

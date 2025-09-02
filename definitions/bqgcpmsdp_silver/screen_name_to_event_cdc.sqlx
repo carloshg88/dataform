@@ -1,0 +1,42 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_cdc",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_cdc`(ScreenName STRING, event_name STRING, event_category STRING, event_action STRING, event_label STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE
+  -- Existem algumas regras da all_events de CDC que não foram aplicadas nessa função. Caso o produto volte a ativa essas regras deveram ser introduzidas na camada GOLD.
+    -- EVENTOS-RETOMADA
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/documentos_aprovados/novo$')                   THEN STRUCT('cdc' AS event_journey, 'documentacao_aprovada_retomada_novo'           AS event_sala, 'bq_af_cdc_documentacao_aprovada_retomada_novo'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/documentos_aprovados/usado$')                  THEN STRUCT('cdc' AS event_journey, 'documentacao_aprovada_retomada_usado'           AS event_sala, 'bq_af_cdc_documentacao_aprovada_retomada_usado'          AS event_postback) 
+
+    --EVENTOS_SUCESSO
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/documentos_aprovados/novo$')                   THEN STRUCT('cdc' AS event_journey, 'documentacao_aprovada_novo'           AS event_sala, 'bq_af_cdc_documentacao_aprovada_novo'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/documentos_aprovados/usado$')                  THEN STRUCT('cdc' AS event_journey, 'documentacao_aprovada_usado'           AS event_sala, 'bq_af_cdc_documentacao_aprovada_usado'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/deu_tudo_certo/novo$')                                             THEN STRUCT('cdc' AS event_journey, 'liberacao_credito_novo'           AS event_sala, 'bq_af_cdc_liberacao_credito_novo'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/deu_tudo_certo/novo$')                                             THEN STRUCT('cdc' AS event_journey, 'liberacao_credito_novo'           AS event_sala, 'bq_af_cdc_liberacao_credito_novo'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/deu_tudo_certo/usado$')                                            THEN STRUCT('cdc' AS event_journey, 'liberacao_credito_usado'           AS event_sala, 'bq_af_cdc_liberacao_credito_usado'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/informacoes_simulacao$')                                     THEN STRUCT('cdc' AS event_journey, 'inicio_condicoes_simulacao'           AS event_sala, 'bq_af_cdc_inicio_condicoes_simulacao'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/comprovante_simulacao_confirmacao/novo$')                    THEN STRUCT('cdc' AS event_journey, 'resultado_simulacao_novo'           AS event_sala, 'bq_af_cdc_resultado_simulacao_novo'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/comprovante_simulacao_confirmacao/usado$')                   THEN STRUCT('cdc' AS event_journey, 'resultado_simulacao_usado'           AS event_sala, 'bq_af_cdc_resultado_simulacao_usado'          AS event_postback) 
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/proposta_aprovada/novo$')                THEN STRUCT('cdc' AS event_journey, 'simulacao_sucesso_novo'           AS event_sala, 'bq_af_cdc_simulacao_sucesso_novo'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/proposta_aprovada/usado$')               THEN STRUCT('cdc' AS event_journey, 'simulacao_sucesso_usado'           AS event_sala, 'bq_af_cdc_simulacao_sucesso_usado'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/naoFoiPossivelFinanciar$')                                   THEN STRUCT('cdc' AS event_journey, 'cliente_nao_elegivel'           AS event_sala, 'bq_af_cdc_cliente_nao_elegivel'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/financiamento_rejeitado/novo$')                              THEN STRUCT('cdc' AS event_journey, 'simulacao_negada_novo'           AS event_sala, 'bq_af_cdc_simulacao_negada_novo'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/financiamento_rejeitado/usado$')                             THEN STRUCT('cdc' AS event_journey, 'simulacao_negada_usado'           AS event_sala, 'bq_af_cdc_simulacao_negada_usado'          AS event_postback)
+    #KPIS adicionados em 10/04
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/usado$')                                 THEN STRUCT('cdc' AS event_journey, 'condicoes_simulacao_usado'           AS event_sala, 'bq_af_cdc_condicoes_simulacao_usado'          AS event_postback)
+    WHEN REGEXP_CONTAINS(ScreenName, r'financiamento_veiculos/condicoes_simulacao/novo$')                                  THEN STRUCT('cdc' AS event_journey, 'condicoes_simulacao_novo'           AS event_sala, 'bq_af_cdc_condicoes_simulacao_novo'          AS event_postback)
+    
+    -- KPI de inicio de fluxo não incluido por quebrar a query, pendente de inclusão de telas em analitycs
+    WHEN event_name = "Event_Data" AND event_category = "financiamentoVeiculos" AND event_action = "submenu_financiamentoDeVeiculos" AND event_label = "financiamentoDeVeiculos"                                                                                                  THEN STRUCT('cdc' AS event_journey, 'inicio_de_fluxo'           AS event_sala, 'bq_af_cdc_inicio_de_fluxo'          AS event_postback)  
+    WHEN event_Name = "Event_Data" AND
+ event_Category = "financiamentoVeiculos" AND event_action = "4_passo_informacoesEDocumentos" AND event_label = "enviarParaAnalise_novo"                                                                                                   THEN STRUCT('cdc' AS event_journey, 'envio_analise_novo'           AS event_sala, 'bq_af_cdc_envio_analise_novo'          AS event_postback)  
+    WHEN event_Name = "Event_Data" AND event_Category = "financiamentoVeiculos" AND event_action = "4_passo_informacoesEDocumentos" AND event_label = "enviarParaAnalise_usado"                                                                                                   THEN STRUCT('cdc' AS event_journey, 'envio_analise_usado'           AS event_sala, 'bq_af_cdc_envio_analise_usado'          AS event_postback) 
+    WHEN event_Name = "Event_Data" AND event_Category = "financiamentoVeiculos" AND event_action = "4_passo_informacoesEDocumentos" AND event_label = "enviarParaAnalise_usado"                                                                                                   THEN STRUCT('cdc' AS event_journey, 'envio_analise_usado'           AS event_sala, 'bq_af_cdc_envio_analise_usado'          AS event_postback)
+    WHEN event_Name = "Event_Data" AND event_Category = "financiamentoVeiculos" AND event_action = "4_passo_informacoesEDocumentos" AND event_label = "enviarParaAnalise_usado"                                                                                                   THEN STRUCT('cdc' AS event_journey, 'envio_analise_novo_retomada'           AS event_sala, 'bq_af_cdc_envio_analise_novo_retomada'          AS event_postback) 
+    WHEN event_Name = "Event_Data" AND event_Category = "financiamentoVeiculos" AND event_action = "4_passo_informacoesEDocumentos" AND event_label = "enviarParaAnalise_usado"                                                                                                   THEN STRUCT('cdc' AS event_journey, 'envio_analise_usado_retomada'           AS event_sala, 'bq_af_cdc_envio_analise_usado_retomada'          AS event_postback)
+  ELSE NULL
+END
+);

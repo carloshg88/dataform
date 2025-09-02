@@ -1,0 +1,102 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_abertura_contas_my_account",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_abertura_contas_my_account`(path STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE      
+    WHEN path = 'my-account/alerta-cotacao/alerta-cadastrado_via-cambio'
+    THEN STRUCT('my_account' AS event_journey, 'alerta_cadastrado_via_cambio' AS event_sala, 'bq_af_alerta_cadastrado_via_cambio' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/snackbar-o-alerta-foi-criado'
+    THEN STRUCT('my_account' AS event_journey, 'alerta_cotacao_criado' AS event_sala, 'bq_af_alerta_cotacao_criado' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/snackbar-o-alerta-foi-excluido'
+    THEN STRUCT('my_account' AS event_journey, 'alerta_cotacao_excluido' AS event_sala, 'bq_af_alerta_cotacao_excluido' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/informacoes'
+    THEN STRUCT('my_account' AS event_journey, 'alerta_de_cotacao_info' AS event_sala, 'bq_af_alerta_de_cotacao_info' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/snackbar-o-alerta-foi-excluido_via-cambio'
+    THEN STRUCT('my_account' AS event_journey, 'alerta_excluido_via_cambio' AS event_sala, 'bq_af_alerta_excluido_via_cambio' AS event_postback)
+    WHEN path = 'my-account/cartoes/ativacao_confirmacao'
+    THEN STRUCT('my_account' AS event_journey, 'ativacao_confirmacao' AS event_sala, 'bq_af_ativacao_confirmacao' AS event_postback)
+    WHEN path = 'my-account/excecao/abertura-conta/pra-pedir-my-account-atualize-estes-dados'
+    THEN STRUCT('my_account' AS event_journey, 'atualizar_cadastro' AS event_sala, 'bq_af_atualizar_cadastro' AS event_postback)
+    WHEN path = 'my-account/cartoes/cartao-virtual/erro-bloqueio-contactless'
+    THEN STRUCT('my_account' AS event_journey, 'bloqueio_compras_aproximacao' AS event_sala, 'bq_af_bloqueio_compras_aproximacao' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelamento-cartao-debito-virtual/motivo'
+    THEN STRUCT('my_account' AS event_journey, 'cancelamento_cartao_virtual' AS event_sala, 'bq_af_cancelamento_cartao_virtual' AS event_postback)
+    WHEN path = 'my-account/cartoes/ativacao_comprovante-cartao-ativado'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_ativado' AS event_sala, 'bq_af_cartao_ativado' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelamento-cartao-virtual/cartao-atual-cancelado-e-um-novo-criado'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_atual_cancelado_novo_gerado' AS event_sala, 'bq_af_cartao_atual_cancelado_novo_gerado' AS event_postback)
+    WHEN path = 'my-account/cartoes/sucesso-no-cancelamento-e-solicitacao-do-cartao'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_cancelado_e_solicitado_novo' AS event_sala, 'bq_af_cartao_cancelado_e_solicitado_novo' AS event_postback)
+    WHEN path = 'my-account/cartoes/cartao-desbloqueado-e-senha-alterada'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_desbloqueado_senha_alterada' AS event_sala, 'bq_af_cartao_desbloqueado_senha_alterada' AS event_postback)
+    WHEN path = 'my-account/cartoes/modal-cartao-fisico-bloqueado'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_fisico_bloqueado_temporario' AS event_sala, 'bq_af_cartao_fisico_bloqueado_temporario' AS event_postback)
+    WHEN path = 'my-account/cartoes/modal-cartao-fisico-desbloqueado'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_fisico_desbloqueado_temporario' AS event_sala, 'bq_af_cartao_fisico_desbloqueado_temporario' AS event_postback)
+    WHEN path = 'my-account/cartoes/pedir-cartao-virtual/cartao-virtual-criado-sites-apps'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_virtual_gerado' AS event_sala, 'bq_af_cartao_virtual_gerado' AS event_postback)
+    WHEN path = 'my-account/cartoes/cartao-virtual/ver-dados'
+    THEN STRUCT('my_account' AS event_journey, 'cartao_virtual_ver_dados' AS event_sala, 'bq_af_cartao_virtual_ver_dados' AS event_postback)
+    WHEN path = 'my-account/cartoes'
+    THEN STRUCT('my_account' AS event_journey, 'cartoes_home' AS event_sala, 'bq_af_cartoes_home' AS event_postback)
+    WHEN path = 'my-account/transferencia-para-brasil/comprovante'
+    THEN STRUCT('my_account' AS event_journey, 'comprovante_transferencia' AS event_sala, 'bq_af_comprovante_transferencia' AS event_postback)
+    WHEN path = 'my-account/configuracao-da-conta'
+    THEN STRUCT('my_account' AS event_journey, 'configuracao_de_conta' AS event_sala, 'bq_af_configuracao_de_conta' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelamento-cartao-virtual/confirmacao-dados'
+    THEN STRUCT('my_account' AS event_journey, 'confirmacao_cancelamento' AS event_sala, 'bq_af_confirmacao_cancelamento' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelar-e-pedir-2-via/confirmacao-dos-dados'
+    THEN STRUCT('my_account' AS event_journey, 'confirmacao_de_dados_cancelamento' AS event_sala, 'bq_af_confirmacao_de_dados_cancelamento' AS event_postback)
+    WHEN path = 'my-account/agora-e-so-confirmar-o-encerramento'
+    THEN STRUCT('my_account' AS event_journey, 'confirmar_encerramento_de_conta' AS event_sala, 'bq_af_confirmar_encerramento_de_conta' AS event_postback)
+    WHEN path = 'my-account/transferencia-para-brasil/confirmar'
+    THEN STRUCT('my_account' AS event_journey, 'confirmar_transferencia_para_brasil' AS event_sala, 'bq_af_confirmar_transferencia_para_brasil' AS event_postback)
+    WHEN path = 'my-account/excecao/configurar-conta/conta-encerrada-e-cartao-cancelado'
+    THEN STRUCT('my_account' AS event_journey, 'conta_encerrada_e_cartao_bloqueado' AS event_sala, 'bq_af_conta_encerrada_e_cartao_bloqueado' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/criar-novo-alerta_via-cambio'
+    THEN STRUCT('my_account' AS event_journey, 'criar_alerta_cotacao_via_cambio' AS event_sala, 'bq_af_criar_alerta_cotacao_via_cambio' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/criar-novo-alerta'
+    THEN STRUCT('my_account' AS event_journey, 'criar_novo_alerta' AS event_sala, 'bq_af_criar_novo_alerta' AS event_postback)
+    WHEN path = 'my-account/cartoes/desbloqueio-do-cartao-crie-uma-nova-senha'
+    THEN STRUCT('my_account' AS event_journey, 'crie_uma_nova_senha' AS event_sala, 'bq_af_crie_uma_nova_senha' AS event_postback)
+    WHEN path = 'my-account/cartoes/ativacao_definir-senha'
+    THEN STRUCT('my_account' AS event_journey, 'definir_senha' AS event_sala, 'bq_af_definir_senha' AS event_postback)
+    WHEN path = 'my-account/cartoes/ativacao_codigo-seguranca-cvv'
+    THEN STRUCT('my_account' AS event_journey, 'digite_codigo_cartao_fisico' AS event_sala, 'bq_af_digite_codigo_cartao_fisico' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/editar-alerta'
+    THEN STRUCT('my_account' AS event_journey, 'editar_alerta' AS event_sala, 'bq_af_editar_alerta' AS event_postback)
+    WHEN path = 'my-account/alerta-cotacao/editar-alerta_via-cambio'
+    THEN STRUCT('my_account' AS event_journey, 'editar_alerta_via_cambio' AS event_sala, 'bq_af_editar_alerta_via_cambio' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelamento-cartao-virtual/algo-deu-errado'
+    THEN STRUCT('my_account' AS event_journey, 'erro_cancelamento_cartao' AS event_sala, 'bq_af_erro_cancelamento_cartao' AS event_postback)
+    WHEN path = 'my-account/cartoes/cancelar-e-pedir-2-via/motivo-do-pedido'
+    THEN STRUCT('my_account' AS event_journey, 'motivo_pedido_cancelamento' AS event_sala, 'bq_af_motivo_pedido_cancelamento' AS event_postback)
+    WHEN path = 'my-account/excecao/abertura-conta/nao-e-possivel-pedir-my-account-no-momento'
+    THEN STRUCT('my_account' AS event_journey, 'nao_e_possivel_pedir_a_conta' AS event_sala, 'bq_af_nao_e_possivel_pedir_a_conta' AS event_postback)
+    WHEN path = 'my-account/cartoes/nao-foi-possivel-cancelar-nem-emitir-a-2-via-do-cartao_{{cod-erro}}'
+    THEN STRUCT('my_account' AS event_journey, 'nao_foi_possivel_cancelar_e_emitir_o_cartao' AS event_sala, 'bq_af_nao_foi_possivel_cancelar_e_emitir_o_cartao' AS event_postback)
+    WHEN path = 'my-account/cartoes/nao-recebi-solicitar-2-via/onboarding'
+    THEN STRUCT('my_account' AS event_journey, 'não_recebi_solicitar_segunda_via_cartao' AS event_sala, 'bq_af_não_recebi_solicitar_segunda_via_cartao' AS event_postback)
+    WHEN path = 'my-account/chegou-my-account-sua-conta-internacional'
+    THEN STRUCT('my_account' AS event_journey, 'peca_sua_conta_internacional' AS event_sala, 'bq_af_peca_sua_conta_internacional' AS event_postback)
+    WHEN path = 'my-account/pronto-vamos-analisar-seu-pedido'
+    THEN STRUCT('my_account' AS event_journey, 'pedido_em_analise' AS event_sala, 'bq_af_pedido_em_analise' AS event_postback)
+    WHEN path = 'my-account/cartoes/pedir-cartao-virtual/onboarding'
+    THEN STRUCT('my_account' AS event_journey, 'pedir_cartao_virtual' AS event_sala, 'bq_af_pedir_cartao_virtual' AS event_postback)
+    WHEN path = 'my-account/conta-pra-mim-porque-voce-quer-encerrar-a-conta'
+    THEN STRUCT('my_account' AS event_journey, 'porque_quer_encerrar_a_conta' AS event_sala, 'bq_af_porque_quer_encerrar_a_conta' AS event_postback)
+    WHEN path = 'my-account/quer-mesmo-solicitar-encerramento-da-conta'
+    THEN STRUCT('my_account' AS event_journey, 'quer_mesmo_encerrar_a_conta' AS event_sala, 'bq_af_quer_mesmo_encerrar_a_conta' AS event_postback)
+    WHEN path = 'my-account/solicitacao-de-encerramento-enviada'
+    THEN STRUCT('my_account' AS event_journey, 'solicitacao_de_encerramento_de_conta' AS event_sala, 'bq_af_solicitacao_de_encerramento_de_conta' AS event_postback)
+    WHEN path = 'my-account/veja-o-que-acontece-ao-solicitar-o-encerramento'
+    THEN STRUCT('my_account' AS event_journey, 'solicitar_encerramento' AS event_sala, 'bq_af_solicitar_encerramento' AS event_postback)
+    WHEN path = 'myaccount/subhome'
+    THEN STRUCT('my_account' AS event_journey, 'subhome' AS event_sala, 'bq_af_subhome' AS event_postback)
+    WHEN path = 'my-account/transferencia-para-brasil/quanto-quer-transferir' THEN STRUCT('my_account' AS event_journey, 'transferencia_para_o_brasil' AS event_sala, 'bq_af_transferencia_para_o_brasil' AS event_postback)    
+  ELSE NULL
+  END
+);

@@ -1,0 +1,23 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_saque_fgts",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_saque_fgts`(screen_name STRING, event_action STRING, event_category STRING, event_label STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE
+
+-- SAQUE FGTS
+WHEN REGEXP_CONTAINS (screen_name, r'fgts/o_que_e_antecipacao_saque_aniversario$')                          THEN STRUCT('saque_fgts' AS event_journey, 'home_jornada' AS event_sala, 'bq_af_saquefgts_home_jornada' AS event_postback) 
+      WHEN REGEXP_CONTAINS (screen_name, r'fgts/confira_tutorial_video_ou_texto$')                                THEN STRUCT('saque_fgts' AS event_journey, 'tela_prerequisitos' AS event_sala, 'bq_af_saquefgts_tela_prerequisitos' AS event_postback) 
+      WHEN REGEXP_CONTAINS (screen_name, r'fgts/sair_do_app_antecipacao_saque_aniversario$')                      THEN STRUCT('saque_fgts' AS event_journey, 'tela_sem_prerequisitos' AS event_sala, 'bq_af_saquefgts_tela_sem_prerequisitos' AS event_postback)
+      WHEN REGEXP_CONTAINS (screen_name, r'fgts/confira_valor_antecipacao_saque_aniversario$')                    THEN STRUCT('saque_fgts' AS event_journey, 'tela_requisitos_valor' AS event_sala, 'bq_af_saquefgts_tela_requisitos_valor' AS event_postback)
+      WHEN REGEXP_CONTAINS (screen_name, r'fgts/informacoes_antecipacao_saque_aniversario$')                      THEN STRUCT('saque_fgts' AS event_journey, 'fluxo_informacoes_detalhes' AS event_sala, 'bq_af_saquefgts_fluxo_informacoes_detalhes' AS event_postback)
+      WHEN REGEXP_CONTAINS (screen_name, r'fgts/operação_em_analise_antecipacao_saque_aniversario$')              THEN STRUCT('saque_fgts' AS event_journey, 'solicitacao_aprovada' AS event_sala, 'bq_af_saquefgts_solicitacao_aprovada' AS event_postback)  
+      -- Esse evento não está sendo usado na mensuração, por tanto não tem problema ele estar zerado.
+      WHEN (screen_name IS NULL AND event_category = 'antecipacaoSaqueFGTS' AND event_action = 'informacoesFluxoeDetalhes_confirmar' AND event_label = 'cliqueBotao' )                                      THEN STRUCT('saque_fgts' AS event_journey, 'solicitacao' AS event_sala, 'bq_af_saquefgts_solicitacao' AS event_postback)
+      
+      
+      ELSE NULL
+  END
+);

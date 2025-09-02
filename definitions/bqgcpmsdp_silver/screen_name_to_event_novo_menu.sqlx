@@ -1,0 +1,22 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_novo_menu",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_novo_menu`(path STRING, location STRING, action STRING, event_name STRING, event_timestamp TIMESTAMP) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE
+      WHEN REGEXP_CONTAINS(path, r'menu-emprestimos/home')                                         THEN STRUCT('menu_emprestimos' AS event_journey, 'home' AS event_sala, 'bq_af_novo_menu_home' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(location, r'menu-emprestimos') AND action = 'liberacao-nas-midias'      THEN STRUCT('menu_emprestimos' AS event_journey, 'liberacao_nas_midias' AS event_sala, 'bq_af_novo_menu_liberacao_nas_midias' AS event_postback)  
+
+      WHEN REGEXP_CONTAINS(location, r'menu-emprestimos') AND action = 'simulador-resultado'       THEN STRUCT('menu_emprestimos' AS event_journey, 'sucesso_simulador' AS event_sala, 'bq_af_novo_menu_sucesso_simulador' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(location, r'menu-emprestimos') AND action = 'clique-simulador-resultado' THEN STRUCT('menu_emprestimos' AS event_journey, 'clique_oferta' AS event_sala, 'bq_af_novo_menu_clique_oferta' AS event_postback) 
+
+      WHEN (event_name = 'ga4_novo_menu_sucesso' and extract(date from event_timestamp) < "2024-11-27") or (event_name = 'ga4_novo_menu_sucesso_novo' and extract(date from event_timestamp) >= "2024-11-27") 
+                                                                                                   THEN STRUCT('menu_emprestimos' AS event_journey, 'ga4_novo_menu_sucesso' AS event_sala, 'bq_af_novo_menu_ga4_novo_menu_sucesso' AS event_postback) 
+
+      ELSE NULL
+  END
+);

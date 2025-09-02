@@ -1,0 +1,68 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_consignado" ,
+  tags: ["function"]   
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_consignado`(event_name STRING, virtualPage STRING, screen_name STRING, event_action STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE
+
+-- TAGUEAMENTO CONSIGNADO LEGADO 
+  WHEN (virtualPage = 'credito_consignado/sub_menu')                                                            THEN STRUCT('consignado' AS event_journey, 'consignado_entradas' AS event_sala, 'bq_af_consignado_entradas' AS event_postback)   
+  WHEN (virtualPage = 'credito_consignado/refinanciamento/**privado, publico ou INSS**/preencha_os_dados')      THEN STRUCT('consignado' AS event_journey, 'consignado_refinanciamento_preencher_dados' AS event_sala, 'bq_af_consignado_refinanciamento_preencher_dados' AS event_postback)   
+  WHEN (virtualPage = 'credito_consignado/novo_contrato/**privado, publico ou INSS**/preencha_os_dados')        THEN STRUCT('consignado' AS event_journey, 'consignado_novo_contrato_preencher_dados' AS event_sala, 'bq_af_consignado_novo_contrato_preencher_dados' AS event_postback)  
+  WHEN (virtualPage = 'credito_consignado/refinanciamento/**privado, publico ou INSS**/transação_efetuada')      THEN STRUCT('consignado' AS event_journey, 'consignado_refinanciamento_conclusao' AS event_sala, 'bq_af_consignado_refinanciamento_conclusao' AS event_postback)   
+  WHEN (virtualPage = 'credito_consignado/novo_contrato/**privado, publico ou INSS**/transação_efetuada')        THEN STRUCT('consignado' AS event_journey, 'consignado_novo_contrato_conclusao' AS event_sala, 'bq_af_consignado_novo_contrato_conclusao' AS event_postback)   
+  WHEN (REGEXP_CONTAINS(screen_name, r'^(.*)bcpf_consignado(.*)TkTcValidacao(.*)'))                                  THEN STRUCT('consignado' AS event_journey, 'consignado_solicitacoes_gerais' AS event_sala, 'bq_af_consignado_entradas_home' AS event_postback)
+  WHEN (REGEXP_CONTAINS(screen_name, r'consignado/home-emprestimos$'))                                               THEN STRUCT('consignado' AS event_journey, 'consignado_entradas_home' AS event_sala, 'bq_af_consignado_entradas_home' AS event_postback)  
+  WHEN (REGEXP_CONTAINS(screen_name, r'/consignado/publico/emprestimo-simulador-resumo$'))                           THEN STRUCT('consignado' AS event_journey, 'consignado_simulador_resumo' AS event_sala, 'bq_af_consignado_simulador_resumo' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(screen_name, r'/consignado/publico/sucesso-contrato-aguardando-averbacao$') 
+    OR (REGEXP_CONTAINS(screen_name, r'/consignado/publico/sucesso-contrato-averbado$')))                            THEN STRUCT('consignado' AS event_journey, 'consignado_novo_contrato_publico' AS event_sala, 'bq_af_consignado_novo_contrato_publico' AS event_postback)
+   
+
+-- TAGUEAMENTO ATUAL
+-- NOVO
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-novo/inss/dataprev' and event_action = 'visualizar'                                                                                                         THEN STRUCT('consignado' AS event_journey, 'home_inss_novo' AS event_sala, 'bq_af_home_inss_novo' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-novo/inss/ofertas' and event_action = 'visualizar'                                                                                                         THEN STRUCT('consignado' AS event_journey, 'escolher_oferta_inss_novo' AS event_sala, 'bq_af_escolher_oferta_inss_novo' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-novo/inss/ofertas/como-desbloquear' and event_action = 'visualizar'                                                                                                         THEN STRUCT('consignado' AS event_journey, 'desbloquear_inss_novo' AS event_sala, 'bq_af_desbloquear_inss_novo' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/com-oferta-seguro/simulacao'))                                                                                                         THEN STRUCT('consignado' AS event_journey, 'condicoes_simulacao_novo_com_seguro' AS event_sala, 'bq_af_condicoes_simulacao_novo_com_seguro' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado|inss)/sem-oferta-seguro/simulacao'))                                                                                                         THEN STRUCT('consignado' AS event_journey, 'condicoes_simulacao_novo_sem_seguro' AS event_sala, 'bq_af_condicoes_simulacao_novo_sem_seguro' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/confirmacao'))                                                                 THEN STRUCT('consignado' AS event_journey, 'confirmar_dados_novo' AS event_sala, 'bq_af_confirmar_dados_novo' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado|inss)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/aprovado'))                                                 THEN STRUCT('consignado' AS event_journey, 'tela_emprestimo_aprovado_novo' AS event_sala, 'bq_af_tela_emprestimo_aprovado_novo' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/em-analise'))                                               THEN STRUCT('consignado' AS event_journey, 'tela_solicitacao_em_analise_novo' AS event_sala, 'bq_af_tela_solicitacao_em_analise_novo' AS event_postback)  
+  WHEN screen_name = 'consignado-novo/inss/sem-oferta-seguro/analise-dataprev' and event_action = 'visualizar'           THEN STRUCT('consignado' AS event_journey, 'em_analise_inss_refin' AS event_sala, 'bq_af_em_analise_inss_refin' AS event_postback)
+
+      
+-- Refinanciamento
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-refinanciamento/inss/dataprev' and event_action = 'visualizar'                                                                                                          THEN STRUCT('consignado' AS event_journey, 'home_inss_refin' AS event_sala, 'bq_af_home_inss_refin' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-refinanciamento/inss/ofertas' and event_action = 'visualizar'                                                                                                          THEN STRUCT('consignado' AS event_journey, 'escolher_oferta_inss_refin' AS event_sala, 'bq_af_escolher_oferta_inss_refin' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-refinanciamento/inss/ofertas/como-desbloquear' 
+  and event_action = 'visualizar'                                                                                         THEN STRUCT('consignado' AS event_journey, 'desbloquear_inss_refin' AS event_sala, 'bq_af_desbloquear_inss_refin' AS event_postback)      
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) 
+  AND (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado|inss)/sem-oferta-seguro/simulacao')) THEN STRUCT('consignado' AS event_journey, 'condicoes_simulacao_refin_com_seguro' AS event_sala, 'bq_af_condicoes_simulacao_refin_sem_seguro' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado)/com-oferta-seguro/simulacao'))                                                                                        THEN STRUCT('consignado' AS event_journey, 'condicoes_simulacao_refin_com_seguro' AS event_sala, 'bq_af_condicoes_simulacao_refin_com_seguro' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/confirmacao'))                                                                  THEN STRUCT('consignado' AS event_journey, 'confirmar_dados_refin' AS event_sala, 'bq_af_confirmar_dados_refin' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado|inss)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/aprovado'))                                                  THEN STRUCT('consignado' AS event_journey, 'tela_emprestimo_aprovado_refin' AS event_sala, 'bq_af_tela_emprestimo_aprovado_refin' AS event_postback) 
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/em-analise'))                                                                   THEN STRUCT('consignado' AS event_journey, 'tela_solicitacao_em_analise_refin' AS event_sala, 'bq_af_tela_solicitacao_em_analise_refin' AS event_postback)       
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND screen_name = 'consignado-refinanciamento/inss/sem-oferta-seguro/analise-dataprev' and event_action = 'visualizar'                                                                                                           THEN STRUCT('consignado' AS event_journey, 'em_analise_inss_refin' AS event_sala, 'bq_af_em_analise_inss_refin' AS event_postback)
+
+
+-- EVENTOS UNIFICADOS
+
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado/home-emprestimos$')) 
+  OR (screen_name = 'consignado-novo/inss/dataprev' and event_action = 'visualizar')     
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/com-oferta-seguro/simulacao'))
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/sem-oferta-seguro/simulacao'))                  THEN STRUCT('consignado' AS event_journey, 'consignado_entradas_novo' AS event_sala, 'bq_af_consignado_entradas_novo' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (screen_name = 'consignado-refinanciamento/inss/dataprev' and event_action = 'visualizar') 
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado|inss)/com-oferta-seguro/simulacao'))       
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado|inss)/sem-oferta-seguro/simulacao'))   THEN STRUCT('consignado' AS event_journey, 'consignado_entradas_refin' AS event_sala, 'bq_af_consignado_entradas_refin' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado|inss)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/aprovado')) 
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-novo/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/em-analise'))   
+  OR (screen_name = 'consignado-novo/inss/sem-oferta-seguro/analise-dataprev' and event_action = 'visualizar')            THEN STRUCT('consignado' AS event_journey, 'conv_consignado_novo' AS event_sala, 'bq_af_conv_consignado_novo' AS event_postback)
+  WHEN (REGEXP_CONTAINS(event_name, r'Screen_Data')) AND (screen_name = 'consignado-refinanciamento/inss/sem-oferta-seguro/analise-dataprev' and event_action = 'visualizar') 
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/em-analise'))
+  OR (REGEXP_CONTAINS(screen_name, r'consignado-refinanciamento/(publico|privado|inss)/(com-oferta-seguro|sem-oferta-seguro|aceite-re-oferta|sem-aceite-re-oferta)/aprovado'))                                                                                                            THEN STRUCT('consignado' AS event_journey, 'conv_consignado_refin' AS event_sala, 'bq_af_conv_consignado_refin' AS event_postback)
+
+      ELSE NULL
+  END
+);

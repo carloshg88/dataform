@@ -1,0 +1,37 @@
+config {
+  type: "operations",     
+  schema: "bqgcpmsdp_silver", // Opcional: o dataset onde a procedure será criada
+  name: "screen_name_to_event_lime",
+  tags: ["function"]    
+}
+CREATE OR REPLACE FUNCTION `${dataform.projectConfig.vars.data_product}.bqgcpmsdp_silver.screen_name_to_event_lime`(event_name STRING, screen_name STRING, tipo_acao STRING) RETURNS STRUCT<event_journey STRING, event_sala STRING, event_postback STRING> AS (
+CASE
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/modal-tutorial/')                        THEN STRUCT('lime' AS event_journey, 'modal_tutorial' AS event_sala, 'bq_af_lime_modal_tutorial' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/tutorial-passo_1/')                      THEN STRUCT('lime' AS event_journey, 'tutorial_passo_1' AS event_sala, 'bq_af_lime_tutorial_passo_1' AS event_postback)  
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/tutorial-passo-2/')                      THEN STRUCT('lime' AS event_journey, 'tutorial_passo_2' AS event_sala, 'bq_af_lime_tutorial_passo_2' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/modal-resultado-simulacao/')             THEN STRUCT('lime' AS event_journey, 'modal_resultado_simulacao' AS event_sala, 'bq_af_lime_modal_resultado_simulacao' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/confirmacao/')                           THEN STRUCT('lime' AS event_journey, 'confirmacao' AS event_sala, 'bq_af_lime_confirmacao' AS event_postback) 
+
+      WHEN screen_name = 'emprestimo/lime/' OR REGEXP_CONTAINS(screen_name, r'emprestimo/lime/(novo-menu|saldo-extrato|BIA-logada|BIA-nao-logada|BIA-whatsapp-nao-logada|BIA-google-nao-logada|menu-limites-credito)')                              THEN STRUCT('lime' AS event_journey, 'simulacao' AS event_sala, 'bq_af_lime_simulacao' AS event_postback)
+
+      WHEN REGEXP_CONTAINS(event_name, r'Screen_Data') 
+      AND REGEXP_CONTAINS(screen_name, r'emprestimo/lime/aprovado/') 
+      AND tipo_acao = 'visualizar'                                                                 THEN STRUCT('lime' AS event_journey, 'aprovado_consolidado_total'  AS event_sala,'bq_af_lime_aprovado_consolidado_total' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/limite_credito_pessoal')                      THEN STRUCT('lime' AS event_journey, 'simulacao_limite_credito'  AS event_sala, 'bq_af_lime_simulacao_limite_credito' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/limite_credito_pessoal/confirmacao')          THEN STRUCT('lime' AS event_journey, 'confirmacao_limite_credito'  AS event_sala, 'bq_af_lime_confirmacao_limite_credito' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/limite_credito_pessoal/transacao_efetuada')   THEN STRUCT('lime' AS event_journey, 'aprovado_limite_credito'  AS event_sala, 'bq_af_lime_aprovado_limite_credito' AS event_postback) 
+
+      WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/limite_credito_pessoal/pagamento_parcelas')   THEN STRUCT('lime' AS event_journey, 'pagamento_parcelas_limite_credito'  AS event_sala, 'bq_af_lime_pagamento_parcelas_limite_credito' AS event_postback)
+            
+  --  WHEN REGEXP_CONTAINS(screen_name, r'emprestimo/lime/aprovado/novo-menu')                     THEN STRUCT('lime' AS event_journey, 'aprovado_novo_menu' AS event_sala, 'bq_af_lime_aprovado_novo_menu' AS event_postback) 
+ 
+      ELSE NULL
+  END
+);
