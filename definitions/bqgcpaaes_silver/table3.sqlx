@@ -5,7 +5,7 @@ config {
   tags: ["tabelas_base"]
 }
 
-create table if not exists `$(dataform.projectConfig.vars.data_product).dataform.minha_tabela` (
+create table if not exists `${dataform.projectConfig.vars.data_product}.dataform.minha_tabela` (
   id int64,
   nome string,
   data timestamp
