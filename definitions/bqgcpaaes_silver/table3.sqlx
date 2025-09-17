@@ -1,7 +1,7 @@
 -- models/tables/minha_tabela.sqlx
 
 config {
-  type: "operation",     -- executa o script exatamente como está
+  type: "operations",    
   tags: ["tabelas_base"]
 }
 

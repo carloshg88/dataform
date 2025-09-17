@@ -6,8 +6,8 @@ config {
   tags: ["tabelas_base"],
 
   bigquery: {
-    partitionBy: "DATE(data)",  -- particionamento por dia, baseado no campo data
-    clusterBy: ["id"]           -- clustering pelo campo id
+    partitionBy: "DATE(data)",  
+    clusterBy: ["id"]          
   }
 }
 
