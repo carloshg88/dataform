@@ -1,0 +1,12 @@
+config {
+  type: "operations",
+  tags: ["tabelas_base"]
+}
+
+create table if not exists `${dataform.projectConfig.vars.data_product}.bqgcpaaes_silver.minha_tabela` (
+  id int64 options(description="Identificador único da linha"),,
+  nome string options(description="Nome da pessoa"),
+  dt_insert timestamp options(description="Data e hora de ingestão"),
+)
+partition by date(dt_insert)
+cluster by id;
