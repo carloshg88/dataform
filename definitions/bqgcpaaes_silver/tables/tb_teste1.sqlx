@@ -1,0 +1,21 @@
+config {
+  type: "table",
+  database: dataform.projectConfig.vars.data_product,  
+  schema: "dataform",
+  tags: ["tabelas_base"],
+  bigquery: {
+    partitionBy: "DATE(dt_insert)",
+    clusterBy: ["id"]
+  },
+  columns: {
+    id: "identificador",
+    descricao: "descricao",
+    dt_insert: "timestamp com data de inserção"
+  },
+}
+select
+  cast(null as int64)      as id,
+  cast(null as string)     as nome,
+  cast(null as timestamp)  as dt_insert
+
+
