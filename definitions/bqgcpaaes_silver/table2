@@ -2,7 +2,7 @@
 
 config {
   type: "table",
-  schema: "meu_schema",
+  schema: "dataform",
   tags: ["tabelas_base"],
 
   bigquery: {

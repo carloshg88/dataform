@@ -3,3 +3,6 @@ defaultLocation: US
 defaultDataset: dataform
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.0
+vars:
+    env: dev
+    data_product: moc-dados-teste001
