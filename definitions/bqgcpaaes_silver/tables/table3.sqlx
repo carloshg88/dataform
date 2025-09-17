@@ -1,4 +1,3 @@
--- models/tables/minha_tabela.sqlx
 
 config {
   type: "operations",    
