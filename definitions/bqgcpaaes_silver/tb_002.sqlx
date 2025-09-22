@@ -2,7 +2,6 @@ config {
     type: "table",
     schema: "bqgcpaaes_silver",
     tags: ["analytics_data"],
-    database: dataform.projectConfig.vars.data_product,
     uniqueKey: ["id"],
     name: "tb_002",
     description: "descrição da tabela ",
