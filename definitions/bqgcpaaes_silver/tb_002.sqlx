@@ -14,6 +14,6 @@ WITH
   tb_002 AS (
     select 1 as id,
     'nome' as nm_pessoa,
-    CURRENT_TIMESTAMP as dt_insert
+    CURRENT_DATE() as dt_insert
 
   ) select * from tb_002
