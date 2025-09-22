@@ -1,8 +1,8 @@
 config {
     type: "table",
     schema: "bqgcpaaes_silver",
-    tags: ["analytics_data"],
-    uniqueKey: ["id"],
+    tags: ["analytics"],
+    database: dataform.projectConfig.vars.data_product,
     name: "tb_002",
     description: "descrição da tabela ",
     bigquery: {
