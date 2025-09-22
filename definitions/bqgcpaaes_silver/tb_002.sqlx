@@ -1,0 +1,21 @@
+config {
+    type: "table",
+    schema: "bqgcpaaes_silver",
+    tags: ["analytics_data", "ga4_af_events_dedup", "ga4_d1"],
+    database: dataform.projectConfig.vars.data_product,
+    uniqueKey: ["id"],
+    name: "tb_002",
+    description: "descrição da tabela ",
+
+    bigquery: {
+        partitionBy: "dt_insert",
+        clusterBy: ["id" , "nm_pessoa"]
+    }
+}
+WITH
+  tb_002 AS (
+    select 1 as id,
+    'nome' as nm_pessoa,
+    CURRENT_TIMESTAMP as dt_insert
+
+  ) select * from tb_002
